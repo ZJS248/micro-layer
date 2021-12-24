@@ -6,6 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "keywords": [
     "leaflet",
     "等值线",
