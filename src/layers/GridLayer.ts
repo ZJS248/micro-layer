@@ -18,18 +18,20 @@ interface Option {
   xInterval?: number;
   /**格点字体间的最小间距，与格点的抽稀相关，默认50(单位像素) */
   yInterval?: number;
+  /**格点字体格式 默认 '10px sans-serif'*/
+  font?: string
   /**格点数据格式化，默认Math.floor */
   format?: (value: number) => string;
   /**是否展示格点方块（用来怼产品的），合理解释了为什么点击事件显示的值和色斑图对不上 */
   showRect?: boolean;
-  /**格点方块颜色，默认与格点值相同 */
-  rectColor?: number;
+  /**格点方块颜色，默认黑色 */
+  rectColor?: string;
   /**格点方块透明度，默认0.2 */
   rectOpacity?: number;
 }
 interface LayerOption extends Option {
   /**是否挂载到单独的某个html元素上 */
-  el?: HTMLElement;
+  el?: HTMLElement | null;
   /**类名*/
   className?: string;
   /**选择加入的地图层级，默认overlayPane */
@@ -51,7 +53,7 @@ interface DataProperty {
 /**格点图层 */
 export default class GridLayer extends EventEmitter {
   private map: LMap;
-  private option: LayerOption;
+  private option: Required<LayerOption>;
   private canvas: HTMLCanvasElement;
   private data: number[] = [];
   private dataProperty?: DataProperty;
@@ -66,27 +68,44 @@ export default class GridLayer extends EventEmitter {
     super();
     this.map = map;
     this.canvas = document.createElement("canvas");
-    this.option = option || {};
+    this.option = {
+      el: null,
+      className: '',
+      pane: "shadowPane",
+      clip: null,
+      moveType: 'moveend',
+      opacity: 1,
+      lineWidth: 2,
+      clipType: 'fuzzy',
+      xInterval: 50,
+      yInterval: 50,
+      color: '#000',
+      font: '10px sans-serif',
+      format: (v: number) => (v | 0).toString(),
+      showRect: false,
+      rectColor: '#000',
+      rectOpacity: 0.2,
+      ...option
+    };
     this._init();
   }
   private _init() {
     this._setZoom();
     this.map.on("click", this._mouseClick, this);
-    this.canvas.className = `leaflet-zoom-animated ${
-      this.option.className || ""
-    }`;
+    this.canvas.className = `leaflet-zoom-animated ${this.option.className || ""
+      }`;
     if (this.option.el) {
       this.option.el.appendChild(this.canvas);
     } else {
       this.map
         .getPanes()
-        [this.option.pane || "shadowPane"].appendChild(this.canvas);
+      [this.option.pane].appendChild(this.canvas);
     }
     this.option.clip && this.setClip(this.option.clip);
   }
   private _setZoom() {
     this.map.on("zoomanim", this._Transform, this);
-    this.map.on(this.option.moveType || "moveend", this._DrawAble, this);
+    this.map.on(this.option.moveType, this._DrawAble, this);
     return this;
   }
   private _Transform(e: L.ZoomAnimEvent) {
@@ -137,11 +156,11 @@ export default class GridLayer extends EventEmitter {
     this.canvas.height = this.map.getSize().y;
 
     const context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
-    context.font = "10px sans-serif";
-    context.lineWidth = this.option.lineWidth || 2;
-    context.globalAlpha = this.option.opacity || 1;
+    context.font = this.option.font;
+    context.lineWidth = this.option.lineWidth;
+    context.globalAlpha = this.option.opacity;
     context.globalCompositeOperation = "source-over";
-    context.fillStyle = this.option.color || "black";
+    context.fillStyle = this.option.color;
     context.save();
     return context;
   }
@@ -272,8 +291,8 @@ export default class GridLayer extends EventEmitter {
     const property = this.dataProperty as DataProperty;
     const origin = this.map.containerPointToLatLng([0, 0]);
     const target = this.map.containerPointToLatLng([
-      this.option.xInterval || 50,
-      this.option.yInterval || 50,
+      this.option.xInterval,
+      this.option.yInterval,
     ]);
     const latStep =
       Math.ceil(Math.abs(target.lat - origin.lat) / property.latStep) *
@@ -287,17 +306,17 @@ export default class GridLayer extends EventEmitter {
       north: Math.min(
         property.border.north,
         property.border.north -
-          Math.floor(
-            (property.border.north - mapBounds.getNorthEast().lat) / latStep
-          ) *
-            latStep
+        Math.floor(
+          (property.border.north - mapBounds.getNorthEast().lat) / latStep
+        ) *
+        latStep
       ),
       west: Math.max(
         Math.floor(
           (mapBounds.getSouthWest().lng - property.border.west) / lonStep
         ) *
-          lonStep +
-          property.border.west,
+        lonStep +
+        property.border.west,
         property.border.west
       ),
       south: Math.max(mapBounds.getSouthWest().lat, property.border.south),
@@ -309,7 +328,7 @@ export default class GridLayer extends EventEmitter {
         const position = this.map.latLngToContainerPoint({ lat: i, lng: j });
         const index =
           Math.round((property.border.north - i) / property.latStep) *
-            property.size[0] +
+          property.size[0] +
           Math.round((j - property.border.west) / property.lonStep); //使用经纬度坐标系计算
         const value = data[index];
         if (value !== undefined) {
@@ -323,6 +342,7 @@ export default class GridLayer extends EventEmitter {
               lng: j + lonStep,
             });
             context.save();
+            context.fillStyle = this.option.rectColor
             context.globalAlpha = this.option.rectOpacity || 0.2;
             context.fillRect(
               position.x - (Math.abs(position.x - next.x) - 1) / 2,
@@ -339,9 +359,8 @@ export default class GridLayer extends EventEmitter {
   /**计算格点值属性 */
   private calGridValue() {
     const property = this.dataProperty as DataProperty;
-    const format =
-      this.option.format || ((val: number) => (val | 0).toString());
-    let getColor = (_v: number) => this.option.color || "black";
+    const format = this.option.format;
+    let getColor = (_v: number) => this.option.color;
     if (this.option.color === "auto" && property?.value && property.color) {
       const colorList = property.color;
       const valueList = property.value;
@@ -352,7 +371,7 @@ export default class GridLayer extends EventEmitter {
   }
   /**销毁图层 */
   destroy(): this {
-    this.map.off(this.option.moveType || "moveend", this._DrawAble, this);
+    this.map.off(this.option.moveType, this._DrawAble, this);
     this.map.off("zoomanim", this._Transform, this);
     this.map.off("click", this._mouseClick, this);
     this.removeAllListeners();
@@ -361,7 +380,7 @@ export default class GridLayer extends EventEmitter {
     } else {
       this.map
         .getPanes()
-        [this.option.pane || "shadowPane"]?.removeChild(this.canvas);
+      [this.option.pane || "shadowPane"]?.removeChild(this.canvas);
     }
     return this;
   }

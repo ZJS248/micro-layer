@@ -71,8 +71,9 @@
 | xInterval |  格点字体间的最小间距，与格点的抽稀相关(单位:像素) | 50  | number  |
 | yInterval  | 格点字体间的最小间距，与格点的抽稀相关(单位:像素)  |  50   | number  |
 | format  | 格点数据格式化 |  Math.floor | (value: number) => string  |
+| font  | 格点字体格式 | 10px sans-serif  | string  |
 | showRect  | 是否展示格点方块 | false  | boolean  |
-| rectColor  | 格点方块颜色 | 与格点值相同  | string  |
+| rectColor  | 格点方块颜色 | black  | string  |
 | rectOpacity  | 格点方块透明度  | 0.2  |  number |
 ###方法
 |  名称 | 描述    | 值类型  |
@@ -121,7 +122,7 @@
 | destroy  | 销毁图层  |   |
 | on  | 监听点击事件  | type:click,callback:function  |
 
-##瓦片图层集合 Tile
+## 瓦片图层集合 Tile
 包含天地图，谷歌地图，高德地图，智图的瓦片图
 
 
@@ -151,8 +152,8 @@
 | fontColor  | 文字颜色 |auto |string  |
 | format  | 对点每个值进行格式化操作 |  |(v:number)=>string  |
 | img  | 自定义点形状,需要能被context.drawImage解析,不受该点size以外其他参数的影响 |  |CanvasImageSource | ((v?: number | string) => CanvasImageSource)  |
-###方法
-|  名称 | 描述    | 值类型  |
+### 方法
+|  名称 | 描述  | 值类型  |  |
 | ------------ | ------------ | ------------ | ------------ |
 | setOption  | 重设canvas的各项参数  | Option  |
 | setData  | 设置图层数据  | data: {  s: number; d: number;size?: [number, number]; color?: string;}[] ,data: {  u: number; v: number;size?: [number, number]; color?: string;}[] |
@@ -162,7 +163,7 @@
 | destroy  | 销毁图层  |   |
 | on  | 监听点击事件  | type:click,callback:function  |
 
-###方法
+### 方法
 参考其他
 Point值类型
 `    {
@@ -173,8 +174,9 @@ Point值类型
       	size?: number[]; //点-宽高,默认[30,30]//
       	type?: PointType; //点类型
     }`
-###方法
-|  名称 | 描述    | 值类型  |
+
+### 方法
+|  名称 | 描述  | 值类型  |   |
 | ------------ | ------------ | ------------ | ------------ |
 | setOption  | 重设canvas的各项参数  | Option  |
 | setData  | 设置图层数据  | Point[]   |
@@ -187,7 +189,7 @@ Point值类型
 | destroy  | 销毁图层  |   |
 | on  | 监听点击事件  | type:click,callback:function  |
 
-##瓦片图层 LevelTile
+## 瓦片图层 LevelTile
 |  名称 | 描述  | 默认值  | 值类型  |
 | ------------ | ------------ | ------------ | ------------ |
 | url  | 瓦片图地址  |   | string  |
