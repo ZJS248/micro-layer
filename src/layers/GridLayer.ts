@@ -8,8 +8,6 @@ import { EventEmitter } from "events";
 interface Option {
   /**透明度，默认1 */
   opacity?: number;
-  /**格点值描边宽，默认2，大概没什么用 */
-  lineWidth?: number;
   /**格点字体颜色，默认黑色,设为auto并有图例时会随着图例变化 */
   color?: "auto" | string;
   /**裁剪类型，精细化裁剪或模糊裁剪,默认模糊*/
@@ -18,8 +16,8 @@ interface Option {
   xInterval?: number;
   /**格点字体间的最小间距，与格点的抽稀相关，默认50(单位像素) */
   yInterval?: number;
-  /**格点字体格式 默认 '10px sans-serif'*/
-  font?: string
+  /**自定义context的部分参数 需要返回context实例*/
+  context?: (ctx: CanvasRenderingContext2D) => CanvasRenderingContext2D
   /**格点数据格式化，默认Math.floor */
   format?: (value: number) => string;
   /**是否展示格点方块（用来怼产品的），合理解释了为什么点击事件显示的值和色斑图对不上 */
@@ -75,12 +73,11 @@ export default class GridLayer extends EventEmitter {
       clip: null,
       moveType: 'moveend',
       opacity: 1,
-      lineWidth: 2,
       clipType: 'fuzzy',
       xInterval: 50,
       yInterval: 50,
       color: '#000',
-      font: '10px sans-serif',
+      context: (ctx) => ctx,
       format: (v: number) => (v | 0).toString(),
       showRect: false,
       rectColor: '#000',
@@ -154,12 +151,11 @@ export default class GridLayer extends EventEmitter {
     this.canvas.style.transform = `translate(${point.x}px, ${point.y}px)`;
     this.canvas.width = this.map.getSize().x;
     this.canvas.height = this.map.getSize().y;
-
-    const context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
-    context.font = this.option.font;
-    context.lineWidth = this.option.lineWidth;
-    context.globalAlpha = this.option.opacity;
-    context.globalCompositeOperation = "source-over";
+    const ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+    ctx.font = '10px sans-serif';
+    ctx.globalAlpha = this.option.opacity;
+    ctx.globalCompositeOperation = "source-over";
+    const context = this.option.context(ctx) || ctx
     context.fillStyle = this.option.color;
     context.save();
     return context;
