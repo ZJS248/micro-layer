@@ -12,6 +12,6 @@
   "dependencies": {
     "dat.gui": "^0.7.7",
     "leaflet": "^1.7.1",
-    "micro-layer": "1.3.2"
+    "micro-layer": "1.3.3"
   }
 }
