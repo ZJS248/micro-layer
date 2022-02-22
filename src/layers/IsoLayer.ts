@@ -74,15 +74,14 @@ export default class IsoLayer extends EventEmitter {
   private _init() {
     this._setZoom();
     this.map.on("click", this._mouseClick, this);
-    this.canvas.className = `leaflet-zoom-animated ${
-      this.option.className || ""
-    }`;
+    this.canvas.className = `leaflet-zoom-animated ${this.option.className || ""
+      }`;
     if (this.option.el) {
       this.option.el.appendChild(this.canvas);
     } else {
       this.map
         .getPanes()
-        [this.option.pane || "overlayPane"].appendChild(this.canvas);
+      [this.option.pane || "overlayPane"].appendChild(this.canvas);
     }
     this.option.clip && this.setClip(this.option.clip);
   }
@@ -176,11 +175,11 @@ export default class IsoLayer extends EventEmitter {
             return points.map((point) => {
               const latlng = [
                 property.border.north +
-                  property.latStep / 2 -
-                  point[1] * property.latStep,
+                property.latStep / 2 -
+                point[1] * property.latStep,
                 property.border.west -
-                  property.lonStep / 2 +
-                  point[0] * property.lonStep,
+                property.lonStep / 2 +
+                point[0] * property.lonStep,
               ];
               return latlng;
             });
@@ -231,10 +230,12 @@ export default class IsoLayer extends EventEmitter {
   /**设置/重设裁剪范围 */
   setClip(data: MLayer.FeatureCollection | null): this {
     this.option.clip = data;
+    const canvas = this.clip.canvas;
+    const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+    context.clearRect(0, 0, canvas.width, canvas.height)
     if (this.option.clip === null || this.option.clipType === "fine") {
       return this;
     }
-    const canvas = this.clip.canvas;
     const border = bbox(data);
     this.clip.offset = [border[0], border[3]];
     const northEast = this.map.latLngToContainerPoint({
@@ -247,7 +248,6 @@ export default class IsoLayer extends EventEmitter {
     });
     canvas.width = northEast.x - southWest.x;
     canvas.height = southWest.y - northEast.y;
-    const context = canvas.getContext("2d") as CanvasRenderingContext2D;
     context.translate(-southWest.x, -northEast.y);
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _self = this;
@@ -358,7 +358,7 @@ export default class IsoLayer extends EventEmitter {
     } else {
       this.map
         .getPanes()
-        [this.option.pane || "overlayPane"]?.removeChild(this.canvas);
+      [this.option.pane || "overlayPane"]?.removeChild(this.canvas);
     }
     return this;
   }

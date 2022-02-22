@@ -219,10 +219,12 @@ export default class GridLayer extends EventEmitter {
   /**设置裁剪范围 */
   setClip(data: MLayer.FeatureCollection | null): this {
     this.option.clip = data;
+    const canvas = this.clip.canvas;
+    const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+    context.clearRect(0, 0, canvas.width, canvas.height)
     if (this.option.clip === null || this.option.clipType === "fine") {
       return this;
     }
-    const canvas = this.clip.canvas;
     const border = bbox(data);
     this.clip.offset = [border[0], border[3]];
     const northEast = this.map.latLngToContainerPoint({
@@ -235,7 +237,6 @@ export default class GridLayer extends EventEmitter {
     });
     canvas.width = northEast.x - southWest.x;
     canvas.height = southWest.y - northEast.y;
-    const context = canvas.getContext("2d") as CanvasRenderingContext2D;
     context.translate(-southWest.x, -northEast.y);
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _self = this;
